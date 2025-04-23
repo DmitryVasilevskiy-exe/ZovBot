@@ -93,9 +93,20 @@ def setup_handlers(application, db: Database, scheduler: Scheduler):
             
             # Создание задач для каждого пользователя
             for username in usernames:
+                # Получаем user_id по username
+                user_id = db.get_user_id_by_username(username)
+                if user_id == 0:
+                    # Если user_id не найден, пробуем получить его из сообщения
+                    try:
+                        chat = await context.bot.get_chat(username)
+                        user_id = chat.id
+                    except Exception as e:
+                        logger.error(f"Error getting user_id for {username}: {e}")
+                        continue
+
                 task_id = db.create_task(
                     group_id=application.bot_data.get('GROUP_ID'),
-                    user_id=0,  # Будет заполнено при публикации
+                    user_id=user_id,
                     username=username,
                     description=description_text,
                     deadline=deadline

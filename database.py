@@ -105,6 +105,18 @@ class Database:
         ''')
         return self.cursor.fetchall()
 
+    def get_user_id_by_username(self, username: str) -> int:
+        """Получение user_id по username"""
+        self.cursor.execute('''
+            SELECT user_id
+            FROM tasks
+            WHERE username = ?
+            ORDER BY id DESC
+            LIMIT 1
+        ''', (username,))
+        result = self.cursor.fetchone()
+        return result[0] if result else 0
+
     def __del__(self):
         """Закрытие соединения с базой данных"""
         self.conn.close() 
