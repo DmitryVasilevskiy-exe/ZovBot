@@ -56,13 +56,13 @@ class Database:
         self.conn.commit()
         return self.cursor.lastrowid
 
-    def get_user_tasks(self, user_id: int) -> list:
-        """Получение задач пользователя"""
+    def get_user_tasks(self, username: str) -> list:
+        """Получение задач пользователя по username"""
         self.cursor.execute('''
             SELECT id, description, deadline, status
             FROM tasks
-            WHERE user_id = ? AND status = 'active'
-        ''', (user_id,))
+            WHERE username = ? AND status = 'active'
+        ''', (username,))
         return self.cursor.fetchall()
 
     def cancel_task(self, task_id: int) -> bool:

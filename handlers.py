@@ -93,20 +93,9 @@ def setup_handlers(application, db: Database, scheduler: Scheduler):
             
             # Создание задач для каждого пользователя
             for username in usernames:
-                # Получаем user_id по username
-                user_id = db.get_user_id_by_username(username)
-                if user_id == 0:
-                    # Если user_id не найден, пробуем получить его из сообщения
-                    try:
-                        chat = await context.bot.get_chat(username)
-                        user_id = chat.id
-                    except Exception as e:
-                        logger.error(f"Error getting user_id for {username}: {e}")
-                        continue
-
                 task_id = db.create_task(
                     group_id=application.bot_data.get('GROUP_ID'),
-                    user_id=user_id,
+                    user_id=0,  # Не используется
                     username=username,
                     description=description_text,
                     deadline=deadline
@@ -137,7 +126,12 @@ def setup_handlers(application, db: Database, scheduler: Scheduler):
 
     async def my_tasks(update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Обработчик команды /my_tasks"""
-        tasks = db.get_user_tasks(update.effective_user.id)
+        username = update.effective_user.username
+        if not username:
+            await update.message.reply_text("❌ У вас не установлен username в Telegram. Пожалуйста, установите его в настройках профиля.")
+            return
+
+        tasks = db.get_user_tasks(username)
         if not tasks:
             await update.message.reply_text("📝 У вас нет активных задач")
             return
